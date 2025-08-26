@@ -9,9 +9,10 @@ import aiofiles
 from datetime import datetime
 from typing import Optional
 
-from fastapi import FastAPI, File, UploadFile, HTTPException, Form
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from config import config
@@ -20,6 +21,10 @@ from bot import send_photo_for_review
 
 # FastAPI app
 app = FastAPI(title="Halloween Quest API", version="1.0.0")
+
+# Serve uploaded photos statically (so web app can fetch them from Render)
+app.mount("/uploads/photos", StaticFiles(directory=config.PHOTOS_DIR), name="uploads")
+
 
 # CORS middleware
 app.add_middleware(
@@ -72,6 +77,7 @@ async def check_parent_link(session_id: str):
 
 @app.post("/api/upload-photo", response_model=PhotoSubmissionResponse)
 async def upload_photo(
+    request: Request,
     session_id: str = Form(...),
     task_id: int = Form(...),
     task_name: str = Form(...),
@@ -106,7 +112,8 @@ async def upload_photo(
             await f.write(content)
         
         # Create public URL
-        photo_url = f"{config.WEB_APP_URL}/uploads/photos/{filename}"
+        base_url = str(request.base_url).rstrip("/")
+        photo_url = f"{base_url}/uploads/photos/{filename}"
         
         # Save to database
         success = await db.submit_photo(
