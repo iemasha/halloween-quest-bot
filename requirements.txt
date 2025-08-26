@@ -1,3 +1,4 @@
+# Halloween Quest Bot Dependencies
 aiogram==3.4.1
 aiofiles==23.2.1
 aiohttp==3.9.3
