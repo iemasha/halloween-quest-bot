@@ -13,7 +13,7 @@ class BotConfig:
     
     # API Settings
     API_HOST: str = os.getenv("API_HOST", "0.0.0.0")
-    API_PORT: int = int(os.getenv("API_PORT", "8080"))
+    API_PORT: int = int(os.getenv("PORT", os.getenv("API_PORT", "8080")))
     
     # Database
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///halloween_quest.db")
